@@ -17,6 +17,9 @@ shift @dirs;
 shift @dirs;
 closedir($DIR);
 
+my $header = "Model";
+my $body = "";
+my %models = ();
 open(my $FHOUT, ">", $output);
 foreach my $dir (@dirs) {
     if($dir ne "." && $dir ne ".." && -d $filepathToDirs."/".$dir) {
@@ -29,11 +32,20 @@ foreach my $dir (@dirs) {
                 $matches{$match}++;
             } else {
                 $matches{$match} = 1 if (length $match > 1);
+                $models{$match} = 1 if (!exists $models{$match} && length $match > 1);
             }
         }
-        print $FHOUT "\n$dir";
-        print $FHOUT "\n".$_.": ".$matches{$_} foreach(keys %matches);
+        for my $key (sort keys %models ) {
+            $matches{$key} = "0" if(!exists $matches{$key} );
+        }
+        $body .=  "\n$dir";
+        $body .= "\t".$matches{$_} foreach(sort keys %matches);
+        $body .= "\n";
     }
 }
 
+$header .= "\t$_" foreach(sort keys %models);
+
+print $FHOUT $header . $body;
 close($FHOUT);
+exit;
